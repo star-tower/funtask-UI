@@ -4,7 +4,7 @@
 
 export type Tag = {
     key: string;
-    value: string;
     namespace: string;
+    value?: string | null;
 };
 

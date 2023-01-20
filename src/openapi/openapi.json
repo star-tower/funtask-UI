@@ -155,7 +155,6 @@
         "title": "Tag",
         "required": [
           "key",
-          "value",
           "namespace"
         ],
         "type": "object",
@@ -164,13 +163,14 @@
             "title": "Key",
             "type": "string"
           },
-          "value": {
-            "title": "Value",
-            "type": "string"
-          },
           "namespace": {
             "title": "Namespace",
             "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string",
+            "nullable": true
           }
         }
       },

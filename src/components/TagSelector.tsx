@@ -17,12 +17,8 @@ import {
     Text
 } from "@chakra-ui/react";
 import {AddIcon, CloseIcon, SearchIcon} from "@chakra-ui/icons";
-
-export interface Tag {
-    key: string
-    value: string | undefined
-    namespace: string
-}
+import {Tag} from "../openapi";
+import {KVTag} from "./KVTag";
 
 export const TagSelector: React.FC<{ type: 'WORKER' | 'FUNCTION', namespace: string }> = ({type, namespace}) => {
     const [tags, setTags] = useState<Tag[]>([]);
@@ -95,30 +91,15 @@ export const TagSelector: React.FC<{ type: 'WORKER' | 'FUNCTION', namespace: str
                 </Badge>
 
                 <Box mt={3}>
-                    {tags.map((tag, index) => <Badge
-                        variant='outline'
-                        colorScheme='green'
+                    {tags.map((tag, index) => <KVTag
                         key={index}
-                        mr={2}
-                    >
-                        <Flex alignItems='center'>
-                            <Text fontSize='sm'>
-                                {tag.key}
-                                {tag.value ? ': ' + tag.value : ''}
-                            </Text>
-                            <IconButton
-                                aria-label='delete'
-                                icon={<CloseIcon/>}
-                                size='es'
-                                ml={1}
-                                onClick={() => {
-                                    setTags((prevState) =>
-                                        prevState.filter((_, existTagIdx) => existTagIdx!==index)
-                                    )
-                                }}
-                            />
-                        </Flex>
-                    </Badge>)}
+                        tagKey={tag.key}
+                        value={tag.value}
+                        onDelete={() => {
+                            setTags((prevState) =>
+                                prevState.filter((_, existTagIdx) => existTagIdx !== index)
+                            )
+                        }}/>)}
                 </Box>
             </CardBody>
         </Card>

@@ -1,4 +1,5 @@
-import React, {ReactElement} from "react";
+import React, {ReactElement, useEffect, useState} from "react";
+import {createColumnHelper, flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {
     Box,
     Button,
@@ -21,16 +22,17 @@ import {
     NumberIncrementStepper,
     NumberInput,
     NumberInputField,
-    NumberInputStepper,
+    NumberInputStepper, Skeleton, Stack,
     Table,
-    Tbody,
-    Thead,
+    Tbody, Td, Th,
+    Thead, Tr,
     useDisclosure
 } from "@chakra-ui/react";
 import {AddIcon} from "@chakra-ui/icons";
 import {TagSelector} from "../components/TagSelector";
-import {ApiService} from "../openapi";
+import {ApiService, Worker as WorkerModel} from "../openapi";
 import {useApiForm} from "../hooks/openapi";
+import {KVTag} from "../components/KVTag";
 
 const useCreateWorker = (): [() => void, ReactElement] => {
     const {register, handleSubmit, formState} = useApiForm();
@@ -89,6 +91,85 @@ const useCreateWorker = (): [() => void, ReactElement] => {
     return [onOpen, createWorkerComponent]
 }
 
+const WorkerTable = () => {
+    const [workers, setWorkers] = useState<WorkerModel[] | undefined>(undefined);
+    const [limit, setLimit] = useState(20);
+    const [cursors, setCursors] = useState<number | null>(null);
+    const [currCursorIdx, setCurrCursorIdx] = useState<number>(0);
+
+    const columnHelper = createColumnHelper<WorkerModel>();
+
+    const columns = [
+        columnHelper.accessor("uuid", {
+            cell: (info) => info.getValue(),
+            header: "uuid"
+        }),
+        columnHelper.accessor("name", {
+            cell: (info) => info.getValue(),
+            header: "name"
+        }),
+        columnHelper.accessor("status", {
+            cell: (info) => info.renderValue(),
+            header: "status"
+        }),
+        columnHelper.accessor("tags", {
+            cell: (info) => {
+                let value = info.getValue();
+                return value ? value.map((tag, idx) => <KVTag
+                    key={idx}
+                    tagKey={tag.key}
+                    value={tag.value}
+                />) : <></>;
+            },
+            header: "tags"
+        })
+    ]
+
+    const table = useReactTable({
+        columns,
+        data: workers ?? [],
+        getCoreRowModel: getCoreRowModel()
+    });
+
+    useEffect(() => {
+        ApiService.getWorkersApiGetWorkersPost({
+            limit: limit
+        }).then((resp) => {
+            setWorkers(resp.workers);
+            setCursors(resp.cursor);
+        });
+    }, [limit]);
+    return <>
+        {
+            workers ?
+                <Table>
+                    <Thead>
+                        {table.getHeaderGroups().map((headerGroup) => (
+                            <Tr key={headerGroup.id}>
+                                {headerGroup.headers.map((header) => <Th key={header.id}>
+                                        {flexRender(header.column.columnDef.header, header.getContext())}
+                                    </Th>
+                                )}
+                            </Tr>
+                        ))}
+                    </Thead>
+                    <Tbody>
+                        {table.getRowModel().rows.map((row) => <Tr key={row.id}>
+                                {row.getVisibleCells().map((cell) => <Td key={cell.id}>
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </Td>)}
+                            </Tr>
+                        )}
+                    </Tbody>
+                </Table> : <Stack>
+                    <Skeleton height='20px'/>
+                    <Skeleton height='20px'/>
+                    <Skeleton height='20px'/>
+                </Stack>
+        }
+    </>
+}
+
 export const Worker: React.FC = () => {
     const [openCreateWorkerModal, createWorkerModal] = useCreateWorker();
     return <>
@@ -106,15 +187,8 @@ export const Worker: React.FC = () => {
                         onClick={openCreateWorkerModal}
                     />
                 </CardBody>
-                <Table>
-                    <Thead>
-
-                    </Thead>
-                    <Tbody>
-
-                    </Tbody>
-                </Table>
             </Card>
+            <WorkerTable/>
         </Box>
     </>
 }
