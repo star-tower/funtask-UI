@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 export type BatchQueryReq = {
-    cursor: number;
     limit: number;
+    cursor?: number | null;
 };
 

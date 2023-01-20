@@ -13,10 +13,10 @@ import {
     EditablePreview,
     EditableTextarea,
     Flex,
-    IconButton, Menu, MenuButton, MenuItem, MenuList, Tag,
+    IconButton, Menu, MenuButton, MenuItem, MenuList,
     Text
 } from "@chakra-ui/react";
-import {AddIcon, CloseIcon, DeleteIcon, SearchIcon} from "@chakra-ui/icons";
+import {AddIcon, CloseIcon, SearchIcon} from "@chakra-ui/icons";
 
 export interface Tag {
     key: string
@@ -113,7 +113,7 @@ export const TagSelector: React.FC<{ type: 'WORKER' | 'FUNCTION', namespace: str
                                 ml={1}
                                 onClick={() => {
                                     setTags((prevState) =>
-                                        prevState.filter((_, existTagIdx) => existTagIdx!=index)
+                                        prevState.filter((_, existTagIdx) => existTagIdx!==index)
                                     )
                                 }}
                             />

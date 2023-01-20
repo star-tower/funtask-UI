@@ -20,7 +20,7 @@ export class ApiService {
      */
     public static increaseWorkerApiIncreaseWorkerPost(
         requestBody: IncreaseWorkerReq,
-    ): CancelablePromise<Worker> {
+    ): CancelablePromise<Array<Worker>> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/increase_worker',

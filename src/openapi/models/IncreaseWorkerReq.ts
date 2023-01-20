@@ -2,8 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { Tag } from './Tag';
+
 export type IncreaseWorkerReq = {
-    name: string;
-    tags: Array<string>;
+    number: number;
+    tags: Array<Tag>;
+    name?: string | null;
 };
 

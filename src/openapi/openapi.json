@@ -28,7 +28,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Worker"
+                  "title": "Response Increase Worker Api Increase Worker Post",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Worker"
+                  }
                 }
               }
             }
@@ -93,18 +97,18 @@
       "BatchQueryReq": {
         "title": "BatchQueryReq",
         "required": [
-          "cursor",
           "limit"
         ],
         "type": "object",
         "properties": {
-          "cursor": {
-            "title": "Cursor",
-            "type": "integer"
-          },
           "limit": {
             "title": "Limit",
             "type": "integer"
+          },
+          "cursor": {
+            "title": "Cursor",
+            "type": "integer",
+            "nullable": true
           }
         }
       },
@@ -124,21 +128,49 @@
       "IncreaseWorkerReq": {
         "title": "IncreaseWorkerReq",
         "required": [
-          "name",
+          "number",
           "tags"
         ],
         "type": "object",
         "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string"
+          "number": {
+            "title": "Number",
+            "type": "integer"
           },
           "tags": {
             "title": "Tags",
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/Tag"
             }
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Tag": {
+        "title": "Tag",
+        "required": [
+          "key",
+          "value",
+          "namespace"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          },
+          "namespace": {
+            "title": "Namespace",
+            "type": "string"
           }
         }
       },
@@ -198,7 +230,7 @@
             "title": "Tags",
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/Tag"
             }
           }
         }
