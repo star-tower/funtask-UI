@@ -6,9 +6,9 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
-export type { BatchQueryReq } from './models/BatchQueryReq';
 export type { HTTPValidationError } from './models/HTTPValidationError';
-export type { IncreaseWorkerReq } from './models/IncreaseWorkerReq';
+export type { IncreaseWorkersReq } from './models/IncreaseWorkersReq';
+export type { NewFuncInstanceReq } from './models/NewFuncInstanceReq';
 export type { Tag } from './models/Tag';
 export type { ValidationError } from './models/ValidationError';
 export type { Worker } from './models/Worker';

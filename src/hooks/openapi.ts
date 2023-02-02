@@ -6,6 +6,7 @@ export const useApiForm = <FV extends FieldValues, TContext>(props?: UseFormProp
     const [submitErr, setSubmitErr] = useState<unknown>(undefined);
     const [invalidSubmitErr, setInvalidSubmitErr] = useState<unknown>(undefined);
     const {handleSubmit, ...formArgs} = useForm<FV>(props);
+
     let errTriedHandleSubmit = (
         onValid: SubmitHandler<FV>,
         apiErrCallback?: (err: unknown) => void,

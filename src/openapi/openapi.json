@@ -5,68 +5,33 @@
     "version": "0.1.0"
   },
   "paths": {
-    "/api/increase_worker": {
-      "post": {
-        "tags": [
-          "api"
-        ],
-        "summary": "Increase Worker",
-        "operationId": "increase_worker_api_increase_worker_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/IncreaseWorkerReq"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Increase Worker Api Increase Worker Post",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Worker"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/get_workers": {
-      "post": {
+    "/api/workers": {
+      "get": {
         "tags": [
           "api"
         ],
         "summary": "Get Workers",
-        "operationId": "get_workers_api_get_workers_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BatchQueryReq"
-              }
-            }
+        "operationId": "get_workers_api_workers_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Limit",
+              "type": "integer"
+            },
+            "name": "limit",
+            "in": "query"
           },
-          "required": true
-        },
+          {
+            "required": false,
+            "schema": {
+              "title": "Cursor",
+              "type": "integer"
+            },
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -89,29 +54,93 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "api"
+        ],
+        "summary": "Increase Worker",
+        "operationId": "increase_worker_api_workers_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncreaseWorkersReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Increase Worker Api Workers Post",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Worker"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/func_instance": {
+      "post": {
+        "tags": [
+          "api"
+        ],
+        "summary": "Trigger Func",
+        "operationId": "trigger_func_api_func_instance_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewFuncInstanceReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
   "components": {
     "schemas": {
-      "BatchQueryReq": {
-        "title": "BatchQueryReq",
-        "required": [
-          "limit"
-        ],
-        "type": "object",
-        "properties": {
-          "limit": {
-            "title": "Limit",
-            "type": "integer"
-          },
-          "cursor": {
-            "title": "Cursor",
-            "type": "integer",
-            "nullable": true
-          }
-        }
-      },
       "HTTPValidationError": {
         "title": "HTTPValidationError",
         "type": "object",
@@ -125,8 +154,8 @@
           }
         }
       },
-      "IncreaseWorkerReq": {
-        "title": "IncreaseWorkerReq",
+      "IncreaseWorkersReq": {
+        "title": "IncreaseWorkersReq",
         "required": [
           "number",
           "tags"
@@ -147,6 +176,63 @@
           "name": {
             "title": "Name",
             "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "NewFuncInstanceReq": {
+        "title": "NewFuncInstanceReq",
+        "required": [
+          "timeout",
+          "dependencies",
+          "change_state"
+        ],
+        "type": "object",
+        "properties": {
+          "timeout": {
+            "title": "Timeout",
+            "type": "integer"
+          },
+          "dependencies": {
+            "title": "Dependencies",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "change_state": {
+            "title": "Change State",
+            "type": "boolean"
+          },
+          "func_base64": {
+            "title": "Func Base64",
+            "type": "string",
+            "nullable": true
+          },
+          "func_uuid": {
+            "title": "Func Uuid",
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "nullable": true
+          },
+          "worker_uuids": {
+            "title": "Worker Uuids",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "worker_tags": {
+            "title": "Worker Tags",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            },
             "nullable": true
           }
         }
@@ -221,6 +307,21 @@
           },
           "status": {
             "$ref": "#/components/schemas/WorkerStatus"
+          },
+          "last_heart_beat": {
+            "title": "Last Heart Beat",
+            "type": "string",
+            "format": "date-time"
+          },
+          "start_time": {
+            "title": "Start Time",
+            "type": "string",
+            "format": "date-time"
+          },
+          "stop_time": {
+            "title": "Stop Time",
+            "type": "string",
+            "format": "date-time"
           },
           "name": {
             "title": "Name",

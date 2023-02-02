@@ -1,8 +1,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { BatchQueryReq } from '../models/BatchQueryReq';
-import type { IncreaseWorkerReq } from '../models/IncreaseWorkerReq';
+import type { IncreaseWorkersReq } from '../models/IncreaseWorkersReq';
+import type { NewFuncInstanceReq } from '../models/NewFuncInstanceReq';
 import type { Worker } from '../models/Worker';
 import type { WorkersWithCursor } from '../models/WorkersWithCursor';
 
@@ -13,17 +13,41 @@ import { request as __request } from '../core/request';
 export class ApiService {
 
     /**
+     * Get Workers
+     * @param limit
+     * @param cursor
+     * @returns WorkersWithCursor Successful Response
+     * @throws ApiError
+     */
+    public static getWorkersApiWorkersGet(
+        limit: number,
+        cursor?: number,
+    ): CancelablePromise<WorkersWithCursor> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/workers',
+            query: {
+                'limit': limit,
+                'cursor': cursor,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Increase Worker
      * @param requestBody
      * @returns Worker Successful Response
      * @throws ApiError
      */
-    public static increaseWorkerApiIncreaseWorkerPost(
-        requestBody: IncreaseWorkerReq,
+    public static increaseWorkerApiWorkersPost(
+        requestBody: IncreaseWorkersReq,
     ): CancelablePromise<Array<Worker>> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/increase_worker',
+            url: '/api/workers',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -33,17 +57,17 @@ export class ApiService {
     }
 
     /**
-     * Get Workers
+     * Trigger Func
      * @param requestBody
-     * @returns WorkersWithCursor Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
-    public static getWorkersApiGetWorkersPost(
-        requestBody: BatchQueryReq,
-    ): CancelablePromise<WorkersWithCursor> {
+    public static triggerFuncApiFuncInstancePost(
+        requestBody: NewFuncInstanceReq,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/get_workers',
+            url: '/api/func_instance',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

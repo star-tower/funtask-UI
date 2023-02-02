@@ -26,7 +26,7 @@ import {
     Table,
     Tbody, Td, Th,
     Thead, Tr,
-    useDisclosure
+    useDisclosure, Text
 } from "@chakra-ui/react";
 import {AddIcon} from "@chakra-ui/icons";
 import {TagSelector} from "../components/TagSelector";
@@ -76,7 +76,7 @@ const useCreateWorker = (): [() => void, ReactElement] => {
                 </Button>
                 <Button isLoading={formState.isSubmitting} colorScheme='green' onClick={
                     handleSubmit(async (data) => {
-                        await ApiService.increaseWorkerApiIncreaseWorkerPost({
+                        await ApiService.increaseWorkerApiWorkersPost({
                             name: data['workerName'],
                             number: data['workerNumber'],
                             tags: []
@@ -105,12 +105,24 @@ const WorkerTable = () => {
             header: "uuid"
         }),
         columnHelper.accessor("name", {
-            cell: (info) => info.getValue(),
+            cell: (info) => info.getValue() || <Text color='gray'>/anonymous/</Text>,
             header: "name"
         }),
         columnHelper.accessor("status", {
             cell: (info) => info.renderValue(),
             header: "status"
+        }),
+        columnHelper.accessor("last_heart_beat", {
+            cell: (info) => info.getValue(),
+            header: "last heart beat"
+        }),
+        columnHelper.accessor("start_time", {
+            cell: (info) => info.getValue(),
+            header: "start at"
+        }),
+        columnHelper.accessor("stop_time", {
+            cell: (info) => info.getValue(),
+            header: "stop at"
         }),
         columnHelper.accessor("tags", {
             cell: (info) => {
@@ -132,9 +144,7 @@ const WorkerTable = () => {
     });
 
     useEffect(() => {
-        ApiService.getWorkersApiGetWorkersPost({
-            limit: limit
-        }).then((resp) => {
+        ApiService.getWorkersApiWorkersGet(limit).then((resp) => {
             setWorkers(resp.workers);
             setCursors(resp.cursor);
         });

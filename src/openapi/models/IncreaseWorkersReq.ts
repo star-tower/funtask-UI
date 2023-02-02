@@ -4,7 +4,7 @@
 
 import type { Tag } from './Tag';
 
-export type IncreaseWorkerReq = {
+export type IncreaseWorkersReq = {
     number: number;
     tags: Array<Tag>;
     name?: string | null;
