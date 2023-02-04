@@ -30,6 +30,15 @@
             },
             "name": "cursor",
             "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Fuzzy Name",
+              "type": "string"
+            },
+            "name": "fuzzy_name",
+            "in": "query"
           }
         ],
         "responses": {
@@ -185,7 +194,9 @@
         "required": [
           "timeout",
           "dependencies",
-          "change_state"
+          "change_state",
+          "description",
+          "func_description"
         ],
         "type": "object",
         "properties": {
@@ -203,6 +214,14 @@
           "change_state": {
             "title": "Change State",
             "type": "boolean"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "func_description": {
+            "title": "Func Description",
+            "type": "string"
           },
           "func_base64": {
             "title": "Func Base64",

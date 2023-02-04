@@ -8,6 +8,8 @@ export type NewFuncInstanceReq = {
     timeout: number;
     dependencies: Array<string>;
     change_state: boolean;
+    description: string;
+    func_description: string;
     func_base64?: string | null;
     func_uuid?: string | null;
     name?: string | null;

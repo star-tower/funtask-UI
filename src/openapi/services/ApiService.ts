@@ -16,12 +16,14 @@ export class ApiService {
      * Get Workers
      * @param limit
      * @param cursor
+     * @param fuzzyName
      * @returns WorkersWithCursor Successful Response
      * @throws ApiError
      */
     public static getWorkersApiWorkersGet(
         limit: number,
         cursor?: number,
+        fuzzyName?: string,
     ): CancelablePromise<WorkersWithCursor> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -29,6 +31,7 @@ export class ApiService {
             query: {
                 'limit': limit,
                 'cursor': cursor,
+                'fuzzy_name': fuzzyName,
             },
             errors: {
                 422: `Validation Error`,
