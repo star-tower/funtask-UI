@@ -4,14 +4,12 @@
 
 import type { Tag } from './Tag';
 
-export type NewFuncInstanceReq = {
+export type NewTaskReq = {
     timeout: number;
     dependencies: Array<string>;
     change_state: boolean;
     description: string;
-    func_description: string;
-    func_base64?: string | null;
-    func_uuid?: string | null;
+    func_uuid: string;
     name?: string | null;
     worker_uuids?: Array<string> | null;
     worker_tags?: Array<Tag> | null;

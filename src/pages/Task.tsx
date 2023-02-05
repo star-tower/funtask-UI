@@ -10,12 +10,11 @@ import {
     ModalOverlay, Text,
     useDisclosure
 } from "@chakra-ui/react";
-import {encode as base64_encode} from 'base-64';
 import {Worker as WorkerComponent} from "../components/Worker"
 import {AddIcon, SearchIcon} from "@chakra-ui/icons";
-import Editor from "@monaco-editor/react";
 import {useApiForm} from "../hooks/openapi";
-import {ApiService, Worker} from "../openapi";
+import {ApiService, Func, Worker} from "../openapi";
+import {FunctionSelector} from "../components/FunctionSelector";
 
 const useCreateTask = (): [() => void, ReactElement] => {
     const {register, handleSubmit, formState} = useApiForm();
@@ -23,8 +22,8 @@ const useCreateTask = (): [() => void, ReactElement] => {
     const [matchedWorkers, setMatchedWorkers] = useState<Worker[]>([]);
     const [currentWorkerSelections, setCurrentWorkerSelections] = useState<Worker[]>([]);
 
-    const [editorValue, setEditorValue] = useState<string | undefined>("def fun(state, logger):\n    ...\n");
     const {isOpen, onOpen, onClose} = useDisclosure();
+    const [selectedFunc, setSelectedFunc] = useState<Func | undefined>(undefined);
 
     const createTaskComponent = <Modal isCentered isOpen={isOpen} onClose={onClose} size='3xl'>
         <ModalOverlay/>
@@ -32,16 +31,6 @@ const useCreateTask = (): [() => void, ReactElement] => {
             <ModalHeader>Create Task</ModalHeader>
             <ModalCloseButton/>
             <ModalBody>
-                <FormControl>
-                    <FormLabel>Func Body</FormLabel>
-                    <Editor
-                        onChange={(value => setEditorValue(value))}
-                        value={editorValue}
-                        height='20vh'
-                        language='python'
-                        theme='vs-dark'
-                    />
-                </FormControl>
                 <FormControl>
                     <FormLabel>Worker Name</FormLabel>
                     <InputGroup>
@@ -80,6 +69,7 @@ const useCreateTask = (): [() => void, ReactElement] => {
                         <Input onChange={(e) => setWorkerSearchValue(e.target.value)} value={workerSearchValue}/>
                     </InputGroup>
                 </FormControl>
+                <FunctionSelector onChange={value => setSelectedFunc(value[0])}/>
             </ModalBody>
             <ModalFooter>
                 <Button mr={3} onClick={onClose}>
@@ -87,15 +77,16 @@ const useCreateTask = (): [() => void, ReactElement] => {
                 </Button>
                 <Button isLoading={formState.isSubmitting} onClick={
                     handleSubmit(async () => {
-                        await ApiService.triggerFuncApiFuncInstancePost({
-                            timeout: 1,
-                            dependencies: [],
-                            description: "",
-                            func_description: "",
-                            change_state: false,
-                            func_base64: base64_encode(editorValue ?? ""),
-                            worker_uuids: currentWorkerSelections.map(worker => worker.uuid)
-                        });
+                        if (selectedFunc !== undefined) {
+                            await ApiService.createTaskApiTaskPost({
+                                timeout: 1,
+                                dependencies: [],
+                                description: "",
+                                func_uuid: selectedFunc.uuid,
+                                change_state: false,
+                                worker_uuids: currentWorkerSelections.map(worker => worker.uuid)
+                            });
+                        }
                     })
                 } colorScheme='green'>Create</Button>
             </ModalFooter>

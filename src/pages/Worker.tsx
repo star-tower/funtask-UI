@@ -67,7 +67,7 @@ const useCreateWorker = (): [() => void, ReactElement] => {
 
                 <FormControl>
                     <FormLabel>Worker Tags</FormLabel>
-                    <TagSelector namespace={'default'} type='WORKER'></TagSelector>
+                    <TagSelector type='WORKER'></TagSelector>
                 </FormControl>
             </ModalBody>
             <ModalFooter>

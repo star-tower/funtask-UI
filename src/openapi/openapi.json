@@ -108,18 +108,18 @@
         }
       }
     },
-    "/api/func_instance": {
+    "/api/task": {
       "post": {
         "tags": [
           "api"
         ],
-        "summary": "Trigger Func",
-        "operationId": "trigger_func_api_func_instance_post",
+        "summary": "Create Task",
+        "operationId": "create_task_api_task_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewFuncInstanceReq"
+                "$ref": "#/components/schemas/NewTaskReq"
               }
             }
           },
@@ -146,10 +146,204 @@
           }
         }
       }
+    },
+    "/api/func": {
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "summary": "Get Func",
+        "operationId": "get_func_api_func_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Limit",
+              "type": "integer"
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Cursor",
+              "type": "integer"
+            },
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Fuzzy Name",
+              "type": "string"
+            },
+            "name": "fuzzy_name",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FuncWithCursor"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "api"
+        ],
+        "summary": "Add Func",
+        "operationId": "add_func_api_func_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewFuncReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Func"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cron_task": {
+      "post": {
+        "tags": [
+          "api"
+        ],
+        "summary": "Create Cron Task",
+        "operationId": "create_cron_task_api_cron_task_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Func": {
+        "title": "Func",
+        "required": [
+          "uuid",
+          "func",
+          "dependencies",
+          "parameter_schema",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "title": "Uuid",
+            "type": "string"
+          },
+          "func": {
+            "title": "Func",
+            "type": "string",
+            "format": "binary"
+          },
+          "dependencies": {
+            "title": "Dependencies",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "parameter_schema": {
+            "title": "Parameter Schema",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ParameterSchema"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        }
+      },
+      "FuncWithCursor": {
+        "title": "FuncWithCursor",
+        "required": [
+          "funcs",
+          "cursor"
+        ],
+        "type": "object",
+        "properties": {
+          "funcs": {
+            "title": "Funcs",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Func"
+            }
+          },
+          "cursor": {
+            "title": "Cursor",
+            "type": "integer"
+          }
+        }
+      },
       "HTTPValidationError": {
         "title": "HTTPValidationError",
         "type": "object",
@@ -189,14 +383,45 @@
           }
         }
       },
-      "NewFuncInstanceReq": {
-        "title": "NewFuncInstanceReq",
+      "NewFuncReq": {
+        "title": "NewFuncReq",
+        "required": [
+          "description",
+          "dependencies"
+        ],
+        "type": "object",
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "dependencies": {
+            "title": "Dependencies",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "nullable": true
+          },
+          "func_base64": {
+            "title": "Func Base64",
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "NewTaskReq": {
+        "title": "NewTaskReq",
         "required": [
           "timeout",
           "dependencies",
           "change_state",
           "description",
-          "func_description"
+          "func_uuid"
         ],
         "type": "object",
         "properties": {
@@ -219,19 +444,9 @@
             "title": "Description",
             "type": "string"
           },
-          "func_description": {
-            "title": "Func Description",
-            "type": "string"
-          },
-          "func_base64": {
-            "title": "Func Base64",
-            "type": "string",
-            "nullable": true
-          },
           "func_uuid": {
             "title": "Func Uuid",
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "name": {
             "title": "Name",
@@ -256,20 +471,28 @@
           }
         }
       },
+      "ParameterSchema": {
+        "title": "ParameterSchema",
+        "required": [
+          "uuid"
+        ],
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "title": "Uuid",
+            "type": "string"
+          }
+        }
+      },
       "Tag": {
         "title": "Tag",
         "required": [
-          "key",
-          "namespace"
+          "key"
         ],
         "type": "object",
         "properties": {
           "key": {
             "title": "Key",
-            "type": "string"
-          },
-          "namespace": {
-            "title": "Namespace",
             "type": "string"
           },
           "value": {

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
     Accordion,
     AccordionButton,
@@ -16,19 +16,26 @@ import {
     IconButton, Menu, MenuButton, MenuItem, MenuList,
     Text
 } from "@chakra-ui/react";
-import {AddIcon, CloseIcon, SearchIcon} from "@chakra-ui/icons";
+import {AddIcon, SearchIcon} from "@chakra-ui/icons";
 import {Tag} from "../openapi";
 import {KVTag} from "./KVTag";
 
-export const TagSelector: React.FC<{ type: 'WORKER' | 'FUNCTION', namespace: string }> = ({type, namespace}) => {
+export const TagSelector: React.FC<{
+    type: 'WORKER' | 'FUNCTION',
+    onChange?: (tags: Tag[]) => void
+}> = ({type, onChange}) => {
     const [tags, setTags] = useState<Tag[]>([]);
-    const [tmpTag, setTmpTag] = useState<string>('');
-    const [tmpTagEnsured, setTmpTagEnsured] = useState(false);
+    const [searchTag, setSearchTag] = useState<string>('');
+    const [searchTagEnsured, setSearchTagEnsured] = useState(false);
+
+    useEffect(() => {
+        onChange?.(tags);
+    }, [tags])
 
     return <div>
         <Card variant='outline' minH={10}>
             <CardBody>
-                <Badge mr={2} variant='outline' colorScheme={tmpTagEnsured ? 'blue' : 'gray'}>
+                <Badge mr={2} variant='outline' colorScheme={searchTagEnsured ? 'blue' : 'gray'}>
                     <Flex alignItems='center'>
                         <Menu>
                             <MenuButton>
@@ -36,18 +43,18 @@ export const TagSelector: React.FC<{ type: 'WORKER' | 'FUNCTION', namespace: str
                             </MenuButton>
                             <MenuList>
                                 <MenuItem onClick={() => {
-                                    setTmpTagEnsured(true);
-                                    setTmpTag('123123');
+                                    setSearchTagEnsured(true);
+                                    setSearchTag('123123');
                                 }}>123123</MenuItem>
                             </MenuList>
                         </Menu>
-                        <Editable value={tmpTag} placeholder='tag'>
+                        <Editable value={searchTag} placeholder='tag'>
                             <EditablePreview/>
                             <EditableTextarea
                                 as="input"
                                 onChange={e => {
-                                    setTmpTag(e.target.value);
-                                    setTmpTagEnsured(false);
+                                    setSearchTag(e.target.value);
+                                    setSearchTagEnsured(false);
                                 }}/>
                         </Editable>
                         <IconButton
@@ -56,13 +63,12 @@ export const TagSelector: React.FC<{ type: 'WORKER' | 'FUNCTION', namespace: str
                             icon={<AddIcon/>}
                             aria-label='create'
                             onClick={() => {
-                                if (!tmpTagEnsured) {
+                                if (!searchTagEnsured) {
                                     return;
                                 }
                                 setTags((prevState) => {
                                     return [...prevState, {
-                                        key: tmpTag,
-                                        namespace: namespace,
+                                        key: searchTag,
                                         value: undefined
                                     }];
                                 });
