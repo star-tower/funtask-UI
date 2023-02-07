@@ -5,7 +5,7 @@ import {
     CardBody,
     CardHeader, FormControl, FormLabel,
     Heading,
-    IconButton,
+    IconButton, InputGroup,
     Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader,
     ModalOverlay,
     useDisclosure
@@ -18,14 +18,17 @@ const useCreateCronTask = (): [() => void, ReactElement] => {
     const {register, handleSubmit, formState} = useApiForm();
     const {isOpen, onOpen, onClose} = useDisclosure();
 
-    const createCronTaskModal = <Modal isOpen={isOpen} onClose={onClose} size='3xl'>
+    const createCronTaskModal = <Modal isCentered isOpen={isOpen} onClose={onClose} size='3xl'>
         <ModalOverlay/>
         <ModalContent>
             <ModalHeader>Create Cron Task</ModalHeader>
             <ModalCloseButton/>
             <ModalBody>
                 <FormControl>
-                    <FormLabel></FormLabel>
+                    <FormLabel>Cron Task Name</FormLabel>
+                    <InputGroup>
+
+                    </InputGroup>
                 </FormControl>
             </ModalBody>
             <ModalFooter>

@@ -15,11 +15,10 @@ import {AddIcon, SearchIcon} from "@chakra-ui/icons";
 import {useApiForm} from "../hooks/openapi";
 import {ApiService, Func, Worker} from "../openapi";
 import {FunctionSelector} from "../components/FunctionSelector";
+import {WorkerSelector} from "../components/WorkerSelector";
 
 const useCreateTask = (): [() => void, ReactElement] => {
     const {register, handleSubmit, formState} = useApiForm();
-    const [workerSearchValue, setWorkerSearchValue] = useState("");
-    const [matchedWorkers, setMatchedWorkers] = useState<Worker[]>([]);
     const [currentWorkerSelections, setCurrentWorkerSelections] = useState<Worker[]>([]);
 
     const {isOpen, onOpen, onClose} = useDisclosure();
@@ -31,44 +30,7 @@ const useCreateTask = (): [() => void, ReactElement] => {
             <ModalHeader>Create Task</ModalHeader>
             <ModalCloseButton/>
             <ModalBody>
-                <FormControl>
-                    <FormLabel>Worker Name</FormLabel>
-                    <InputGroup>
-                        <InputLeftElement children={
-                            <Menu>
-                                <MenuButton onClick={async () => {
-                                    const resp = await ApiService.getWorkersApiWorkersGet(
-                                        10,
-                                        undefined,
-                                        workerSearchValue
-                                    );
-                                    setMatchedWorkers(resp.workers);
-                                }
-                                }>
-                                    <IconButton
-                                        aria-label={'search'}
-                                        size='es'
-                                        icon={<SearchIcon/>}
-                                    />
-                                </MenuButton>
-                                <MenuList>
-                                    {matchedWorkers.length === 0 ? <Text color='grey'>empty</Text> : <></>}
-                                    {matchedWorkers.map(
-                                        (worker, i) => <MenuItem
-                                            key={i}
-                                            onClick={() => {setCurrentWorkerSelections(
-                                                prevState => [...prevState, worker]
-                                            )}}
-                                        >
-                                            <WorkerComponent worker={worker}/>
-                                        </MenuItem>
-                                    )}
-                                </MenuList>
-                            </Menu>
-                        }/>
-                        <Input onChange={(e) => setWorkerSearchValue(e.target.value)} value={workerSearchValue}/>
-                    </InputGroup>
-                </FormControl>
+                <WorkerSelector onWorkerChange={setCurrentWorkerSelections}/>
                 <FunctionSelector onChange={value => setSelectedFunc(value[0])}/>
             </ModalBody>
             <ModalFooter>
