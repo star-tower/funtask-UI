@@ -4,6 +4,7 @@
 import type { Func } from '../models/Func';
 import type { FuncWithCursor } from '../models/FuncWithCursor';
 import type { IncreaseWorkersReq } from '../models/IncreaseWorkersReq';
+import type { NewCronTaskReq } from '../models/NewCronTaskReq';
 import type { NewFuncReq } from '../models/NewFuncReq';
 import type { NewTaskReq } from '../models/NewTaskReq';
 import type { Worker } from '../models/Worker';
@@ -131,13 +132,21 @@ export class ApiService {
 
     /**
      * Create Cron Task
+     * @param requestBody
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static createCronTaskApiCronTaskPost(): CancelablePromise<any> {
+    public static createCronTaskApiCronTaskPost(
+        requestBody: NewCronTaskReq,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/cron_task',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 

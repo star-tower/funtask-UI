@@ -1,22 +1,37 @@
-import React, {ReactElement} from "react";
+import React, {ReactElement, useState} from "react";
 import {
-    Box, Button,
+    Box,
+    Button,
     Card,
     CardBody,
-    CardHeader, FormControl, FormLabel,
+    CardHeader,
+    FormControl,
+    FormLabel,
     Heading,
-    IconButton, InputGroup,
-    Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader,
+    IconButton,
+    Input,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
     ModalOverlay,
     useDisclosure
 } from "@chakra-ui/react";
 import {AddIcon} from "@chakra-ui/icons";
 import {useApiForm} from "../hooks/openapi";
+import {WorkerSelector} from "../components/WorkerSelector";
+import {ApiService, Func, TimeUnit, Worker} from "../openapi";
+import {SliderSelector} from "../components/SliderSelector";
+import {FunctionSelector} from "../components/FunctionSelector";
 
 
 const useCreateCronTask = (): [() => void, ReactElement] => {
     const {register, handleSubmit, formState} = useApiForm();
     const {isOpen, onOpen, onClose} = useDisclosure();
+    const [currentWorkerSelections, setCurrentWorkerSelections] = useState<Worker[]>([]);
+    const [functions, setFunctions] = useState<Func[]>([]);
 
     const createCronTaskModal = <Modal isCentered isOpen={isOpen} onClose={onClose} size='3xl'>
         <ModalOverlay/>
@@ -26,15 +41,42 @@ const useCreateCronTask = (): [() => void, ReactElement] => {
             <ModalBody>
                 <FormControl>
                     <FormLabel>Cron Task Name</FormLabel>
-                    <InputGroup>
-
-                    </InputGroup>
+                    <Input {...register('name')}/>
                 </FormControl>
+                <WorkerSelector onWorkerChange={setCurrentWorkerSelections}/>
+                <FormControl>
+                    <FormLabel>Every</FormLabel>
+                    <Input mb={2} defaultValue={1} type='number'/>
+                    <SliderSelector options={[
+                        {value: "micro-seconds", display: "MicroSeconds"},
+                        {value: "seconds", display: "Seconds"},
+                        {value: "minutes", display: "Minutes"},
+                        {value: "hour", display: "Hour"},
+                        {value: "day", display: "Day"},
+                        {value: "week", display: "Week"},
+                        {value: "month", display: "Month"},
+                    ]}/>
+                </FormControl>
+                <FunctionSelector onChange={setFunctions}/>
             </ModalBody>
             <ModalFooter>
                 <Button mr={3} onClick={onClose}>
                     Close
                 </Button>
+                <Button isLoading={formState.isSubmitting} onClick={
+                    handleSubmit(async () => {
+                        if (functions.length !== 0) {
+                            await ApiService.createCronTaskApiCronTaskPost({
+                                function_uuid: functions[0].uuid,
+                                timepoints: [{
+                                  unit: TimeUnit.SECOND,
+                                  n: 1
+                                }],
+                                worker_uuid: currentWorkerSelections[0].uuid
+                            })
+                        }
+                    })
+                } colorScheme='green'>Create</Button>
             </ModalFooter>
         </ModalContent>
     </Modal>;

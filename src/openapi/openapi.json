@@ -253,12 +253,32 @@
         ],
         "summary": "Create Cron Task",
         "operationId": "create_cron_task_api_cron_task_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewCronTaskReq"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -383,6 +403,32 @@
           }
         }
       },
+      "NewCronTaskReq": {
+        "title": "NewCronTaskReq",
+        "required": [
+          "function_uuid",
+          "timepoints",
+          "worker_uuid"
+        ],
+        "type": "object",
+        "properties": {
+          "function_uuid": {
+            "title": "Function Uuid",
+            "type": "string"
+          },
+          "timepoints": {
+            "title": "Timepoints",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimePoint"
+            }
+          },
+          "worker_uuid": {
+            "title": "Worker Uuid",
+            "type": "string"
+          }
+        }
+      },
       "NewFuncReq": {
         "title": "NewFuncReq",
         "required": [
@@ -501,6 +547,39 @@
             "nullable": true
           }
         }
+      },
+      "TimePoint": {
+        "title": "TimePoint",
+        "required": [
+          "unit",
+          "n"
+        ],
+        "type": "object",
+        "properties": {
+          "unit": {
+            "$ref": "#/components/schemas/TimeUnit"
+          },
+          "n": {
+            "title": "N",
+            "type": "integer"
+          },
+          "at": {
+            "title": "At",
+            "type": "string"
+          }
+        }
+      },
+      "TimeUnit": {
+        "title": "TimeUnit",
+        "enum": [
+          "SECOND",
+          "MINUTE",
+          "HOUR",
+          "DAY",
+          "WEEK",
+          "MILLISECOND"
+        ],
+        "description": "An enumeration."
       },
       "ValidationError": {
         "title": "ValidationError",
