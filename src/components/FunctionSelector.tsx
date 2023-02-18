@@ -1,67 +1,77 @@
 import React, {useEffect, useState} from "react";
-import {Func} from "../openapi"
+import {Func, FuncWithCursor} from "../openapi"
 import {
     Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box,
     Button, Flex,
     FormControl,
     FormLabel,
-    IconButton,
-    Input,
-    InputGroup,
-    InputLeftElement,
-    Menu,
-    MenuButton, MenuItem, MenuList, Textarea
+    Input, MenuItem, Stack, Text,
+    Textarea, Tooltip
 } from "@chakra-ui/react";
-import {SearchIcon} from "@chakra-ui/icons";
-import {useApiForm} from "../hooks/openapi";
+import {useApi, useApiForm} from "../hooks/openapi";
 import {ApiService} from "../openapi";
 import Editor from "@monaco-editor/react";
 import {encode as base64_encode} from "base-64";
+import {SearchInput} from "./SearchInput";
+import {KVTag} from "./KVTag";
 
 export const FunctionSelector: React.FC<{
     onChange?: (functions: Func[]) => void,
     onlyOne?: boolean
 }> = ({onlyOne, onChange}) => {
     const [functions, setFunctions] = useState<Func[]>([]);
-    const [searchFunctionsRes, setSearchFunctionsRes] = useState<Func[]>([]);
-    const {register, handleSubmit, formState} = useApiForm();
     const {handleSubmit: createFuncHandler, formState: createFuncFormState, register: createFuncRegister} = useApiForm();
     const [editorValue, setEditorValue] = useState<string | undefined>("def fun(state, logger):\n    ...\n");
+    const {error: searchErr, loading: searchLoading, result: queryResult, query} = useApi<FuncWithCursor>();
 
     useEffect(() => onChange?.(functions), [functions, onChange]);
 
     return <div>
         <FormControl>
-            <FormLabel>Function Name</FormLabel>
-            <InputGroup>
-                <InputLeftElement children={
-                    <Menu>
-                        <MenuButton onClick={() => handleSubmit(async (form) => {
-                            const resp = await ApiService.getFuncApiFuncGet(10, undefined, form['search']);
-                            setSearchFunctionsRes(resp.funcs);
-                        })}>
-                            <IconButton isLoading={formState.isSubmitting} aria-label='search' size='es'
-                                        icon={<SearchIcon/>}/>
-                        </MenuButton>
-                        <MenuList>
-                            {searchFunctionsRes.map((func, index) => <MenuItem
-                                key={index}
-                                onClick={() => {
-                                    if (onlyOne) {
-                                        setFunctions([func]);
-                                    } else {
-                                        setFunctions(prevState => [...new Set([...prevState, func])])
-                                    }
-                                }}
-                            >
-                                {func.name}
-                            </MenuItem>)}
-                        </MenuList>
-                    </Menu>
-                }/>
-                <Input {...register('search')}/>
-            </InputGroup>
+            <FormLabel>Search Function Name</FormLabel>
+            <SearchInput
+                onSearch={(value) => {query(() => ApiService.getFuncApiFuncGet(10, undefined, value))}}
+                loading={searchLoading}
+                values={queryResult?.funcs ?? []}
+                render={func => <MenuItem onClick={() => {
+                    if (onlyOne) {
+                        setFunctions([func]);
+                    } else {
+                        setFunctions(prevState => {
+                            if (prevState.filter(value => value.uuid === func.uuid).length === 0) {
+                                return [...prevState, func];
+                            }
+                            return prevState;
+                        })
+                    }
+                }}>
+                    <Tooltip label={func.description}>
+                        <Stack>
+                            <Text>
+                                F: {func.name}
+                            </Text>
+                            <Text color='grey' fontSize='xs'>{func.uuid}</Text>
+                            {func.dependencies.length && <Text color='grey' fontSize='xs'>{JSON.stringify(func.dependencies)}</Text>}
+                            <Flex>
+                                {func.tags?.map(tag => <KVTag tagKey={tag.key} value={tag.value}/>)}
+                            </Flex>
+                        </Stack>
+                    </Tooltip>
+                </MenuItem>}
+            />
         </FormControl>
+        <Box mt={3}>
+            {functions.map((func, index) => <KVTag
+                key={index}
+                tagKey={func.name ?? ''}
+                value={func.uuid}
+                onDelete={() => {
+                    setFunctions(prevState => prevState.filter(
+                        item => item.uuid !== func.uuid
+                    ));
+                }}
+            />)}
+        </Box>
         <Accordion allowToggle>
             <AccordionItem>
                 <h2>
