@@ -7,6 +7,7 @@ import type { IncreaseWorkersReq } from '../models/IncreaseWorkersReq';
 import type { NewCronTaskReq } from '../models/NewCronTaskReq';
 import type { NewFuncReq } from '../models/NewFuncReq';
 import type { NewTaskReq } from '../models/NewTaskReq';
+import type { ParameterSchema } from '../models/ParameterSchema';
 import type { Worker } from '../models/Worker';
 import type { WorkersWithCursor } from '../models/WorkersWithCursor';
 
@@ -124,6 +125,27 @@ export class ApiService {
             url: '/api/func',
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Get Func Schema
+     * @param funcBase64
+     * @returns ParameterSchema Successful Response
+     * @throws ApiError
+     */
+    public static getFuncSchemaApiFuncSchemaGet(
+        funcBase64: string,
+    ): CancelablePromise<ParameterSchema> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/func_schema',
+            query: {
+                'func_base64': funcBase64,
+            },
             errors: {
                 422: `Validation Error`,
             },

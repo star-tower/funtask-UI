@@ -246,6 +246,48 @@
         }
       }
     },
+    "/api/func_schema": {
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "summary": "Get Func Schema",
+        "operationId": "get_func_schema_api_func_schema_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Func Base64",
+              "type": "string"
+            },
+            "name": "func_base64",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParameterSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cron_task": {
       "post": {
         "tags": [
@@ -520,12 +562,17 @@
       "ParameterSchema": {
         "title": "ParameterSchema",
         "required": [
-          "uuid"
+          "uuid",
+          "json_schema"
         ],
         "type": "object",
         "properties": {
           "uuid": {
             "title": "Uuid",
+            "type": "string"
+          },
+          "json_schema": {
+            "title": "Json Schema",
             "type": "string"
           }
         }
@@ -579,6 +626,7 @@
           "WEEK",
           "MILLISECOND"
         ],
+        "type": "string",
         "description": "An enumeration."
       },
       "ValidationError": {
@@ -665,6 +713,7 @@
           "STOPPED",
           "DIED"
         ],
+        "type": "string",
         "description": "An enumeration."
       },
       "WorkersWithCursor": {

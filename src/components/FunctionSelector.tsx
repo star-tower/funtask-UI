@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {Func, FuncWithCursor} from "../openapi"
+import {Func, FuncWithCursor, ParameterSchema} from "../openapi"
 import {
     Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box,
-    Button, Flex,
+    Button, Checkbox, Flex,
     FormControl,
     FormLabel,
     Input, MenuItem, Stack, Text,
@@ -14,6 +14,7 @@ import Editor from "@monaco-editor/react";
 import {encode as base64_encode} from "base-64";
 import {SearchInput} from "./SearchInput";
 import {KVTag} from "./KVTag";
+import {ParameterSchema as ParameterSchemaComp} from "./ParameterSchema";
 
 export const FunctionSelector: React.FC<{
     onChange?: (functions: Func[]) => void,
@@ -23,6 +24,7 @@ export const FunctionSelector: React.FC<{
     const {handleSubmit: createFuncHandler, formState: createFuncFormState, register: createFuncRegister} = useApiForm();
     const [editorValue, setEditorValue] = useState<string | undefined>("def fun(state, logger):\n    ...\n");
     const {error: searchErr, loading: searchLoading, result: queryResult, query} = useApi<FuncWithCursor>();
+    const {loading: schemaGenLoading, result: schemaGenResult, query: schemaQuery} = useApi<ParameterSchema>();
 
     useEffect(() => onChange?.(functions), [functions, onChange]);
 
@@ -92,7 +94,19 @@ export const FunctionSelector: React.FC<{
                             language='python'
                             theme='vs-dark'
                         />
+                        <Checkbox mt={3}>Fat Function</Checkbox>
+                        <Flex justifyContent='flex-end' mt={2}>
+                            <Button
+                                isLoading={schemaGenLoading}
+                                onClick={() => schemaQuery(() => ApiService.getFuncSchemaApiFuncSchemaGet(
+                                    base64_encode(editorValue ?? "")
+                                ))}
+                            >Generate Schema</Button>
+                        </Flex>
                     </FormControl>
+                    {schemaGenResult &&
+                        <ParameterSchemaComp schema={schemaGenResult.json_schema}/>
+                    }
                     <FormControl>
                         <FormLabel>Function Name</FormLabel>
                         <Input {...createFuncRegister('name')}/>

@@ -47,7 +47,7 @@ const useCreateCronTask = (): [() => void, ReactElement] => {
                 <FormControl>
                     <FormLabel>Every</FormLabel>
                     <Input mb={2} defaultValue={1} type='number'/>
-                    <SliderSelector options={[
+                    <SliderSelector defaultValue='seconds' options={[
                         {value: "micro-seconds", display: "MicroSeconds"},
                         {value: "seconds", display: "Seconds"},
                         {value: "minutes", display: "Minutes"},
