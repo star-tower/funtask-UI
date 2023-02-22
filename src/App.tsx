@@ -7,9 +7,7 @@ import {router} from "./router";
 
 function App() {
     return <ChakraProvider>
-        <React.StrictMode>
-            <RouterProvider router={router}/>
-        </React.StrictMode>
+        <RouterProvider router={router}/>
     </ChakraProvider>;
 }
 

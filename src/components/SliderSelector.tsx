@@ -36,7 +36,7 @@ export function SliderSelector<T extends string>(props: {
             <SliderThumb/>
         </Slider>
         <Select value={currValue} placeholder={placeholder} onChange={value => setCurrValue(value.target.value)}>
-            {options.map(option => <option value={option.value}>{option.display}</option>)}
+            {options.map((option, index) => <option key={index} value={option.value}>{option.display}</option>)}
         </Select>
     </Flex>
 }
