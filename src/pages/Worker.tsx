@@ -26,13 +26,14 @@ import {
     Table,
     Tbody, Td, Th,
     Thead, Tr,
-    useDisclosure, Text
+    useDisclosure, Text, useInterval
 } from "@chakra-ui/react";
 import {AddIcon} from "@chakra-ui/icons";
 import {TagSelector} from "../components/TagSelector";
 import {ApiService, Worker as WorkerModel} from "../openapi";
 import {useApiForm} from "../hooks/openapi";
 import {KVTag} from "../components/KVTag";
+import {numberValueTypes} from "framer-motion/types/render/dom/value-types/number";
 
 const useCreateWorker = (): [() => void, ReactElement] => {
     const {register, handleSubmit, formState} = useApiForm();
@@ -94,7 +95,8 @@ const useCreateWorker = (): [() => void, ReactElement] => {
 const WorkerTable = () => {
     const [workers, setWorkers] = useState<WorkerModel[] | undefined>(undefined);
     const [limit, setLimit] = useState(20);
-    const [cursors, setCursors] = useState<number | null>(null);
+    const [cursor, setCursor] = useState<number | undefined>();
+    const [nextCursor, setNextCursor] = useState<number | undefined>();
     const [currCursorIdx, setCurrCursorIdx] = useState<number>(0);
 
     const columnHelper = createColumnHelper<WorkerModel>();
@@ -146,9 +148,16 @@ const WorkerTable = () => {
     useEffect(() => {
         ApiService.getWorkersApiWorkersGet(limit).then((resp) => {
             setWorkers(resp.workers);
-            setCursors(resp.cursor);
+            setNextCursor(resp.cursor);
         });
     }, [limit]);
+
+    useInterval(() => {
+        ApiService.getWorkersApiWorkersGet(limit, cursor).then((resp) => {
+            setWorkers(resp.workers);
+        });
+    }, 1)
+
     return <>
         {
             workers ?
