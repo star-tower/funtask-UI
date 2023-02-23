@@ -207,7 +207,9 @@ export const Worker: React.FC = () => {
                     />
                 </CardBody>
             </Card>
-            <WorkerTable/>
+            <Box mt={3}>
+                <WorkerTable/>
+            </Box>
         </Box>
     </>
 }

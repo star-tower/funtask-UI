@@ -33,6 +33,7 @@ const useCreateCronTask = (): [() => void, ReactElement] => {
     const [currentWorkerSelections, setCurrentWorkerSelections] = useState<Worker[]>([]);
     const [functions, setFunctions] = useState<Func[]>([]);
     const [timeUnit, setTimeUnit] = useState(TimeUnit.SECOND);
+    const [n, setN] = useState(1);
 
     const createCronTaskModal = <Modal isCentered isOpen={isOpen} onClose={onClose} size='3xl'>
         <ModalOverlay/>
@@ -47,7 +48,7 @@ const useCreateCronTask = (): [() => void, ReactElement] => {
                 <WorkerSelector onWorkerChange={setCurrentWorkerSelections}/>
                 <FormControl>
                     <FormLabel>Every</FormLabel>
-                    <Input mb={2} defaultValue={1} type='number'/>
+                    <Input mb={2} defaultValue={1} value={n} onChange={event => setN(Number(event.target.value))} type='number'/>
                     <SliderSelector defaultValue='seconds' options={[
                         {value: "milliseconds", display: "Millisecond"},
                         {value: "seconds", display: "Seconds"},
@@ -76,8 +77,8 @@ const useCreateCronTask = (): [() => void, ReactElement] => {
                             await ApiService.createCronTaskApiCronTaskPost({
                                 function_uuid: functions[0].uuid,
                                 timepoints: [{
-                                  unit: TimeUnit.SECOND,
-                                  n: 1
+                                  unit: timeUnit,
+                                  n
                                 }],
                                 worker_uuid: currentWorkerSelections[0].uuid
                             })
