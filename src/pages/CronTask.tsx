@@ -33,7 +33,7 @@ const useCreateCronTask = (): [() => void, ReactElement] => {
     const [currentWorkerSelections, setCurrentWorkerSelections] = useState<Worker[]>([]);
     const [functions, setFunctions] = useState<Func[]>([]);
     const [timeUnit, setTimeUnit] = useState(TimeUnit.SECOND);
-    const [n, setN] = useState(1);
+    const [n, setN] = useState<number | undefined>();
 
     const createCronTaskModal = <Modal isCentered isOpen={isOpen} onClose={onClose} size='3xl'>
         <ModalOverlay/>
@@ -48,7 +48,13 @@ const useCreateCronTask = (): [() => void, ReactElement] => {
                 <WorkerSelector onWorkerChange={setCurrentWorkerSelections}/>
                 <FormControl>
                     <FormLabel>Every</FormLabel>
-                    <Input mb={2} defaultValue={1} value={n} onChange={event => setN(Number(event.target.value))} type='number'/>
+                    <Input mb={2} defaultValue={1} value={n} onChange={event => {
+                        if (event.target.value !== '') {
+                            setN(Number(event.target.value));
+                        } else {
+                            setN(undefined);
+                        }
+                    }} type='number'/>
                     <SliderSelector defaultValue='seconds' options={[
                         {value: "milliseconds", display: "Millisecond"},
                         {value: "seconds", display: "Seconds"},
@@ -78,7 +84,7 @@ const useCreateCronTask = (): [() => void, ReactElement] => {
                                 function_uuid: functions[0].uuid,
                                 timepoints: [{
                                   unit: timeUnit,
-                                  n
+                                  n: n ?? 1
                                 }],
                                 worker_uuid: currentWorkerSelections[0].uuid
                             })

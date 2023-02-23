@@ -26,14 +26,13 @@ import {
     Table,
     Tbody, Td, Th,
     Thead, Tr,
-    useDisclosure, Text, useInterval
+    useDisclosure, Text, useInterval, InputGroup, InputRightAddon, HStack
 } from "@chakra-ui/react";
 import {AddIcon} from "@chakra-ui/icons";
 import {TagSelector} from "../components/TagSelector";
 import {ApiService, Worker as WorkerModel} from "../openapi";
 import {useApiForm} from "../hooks/openapi";
 import {KVTag} from "../components/KVTag";
-import {numberValueTypes} from "framer-motion/types/render/dom/value-types/number";
 
 const useCreateWorker = (): [() => void, ReactElement] => {
     const {register, handleSubmit, formState} = useApiForm();
@@ -156,7 +155,7 @@ const WorkerTable = () => {
         ApiService.getWorkersApiWorkersGet(limit, cursor).then((resp) => {
             setWorkers(resp.workers);
         });
-    }, 1)
+    }, 1000)
 
     return <>
         {
@@ -191,6 +190,7 @@ const WorkerTable = () => {
 
 export const Worker: React.FC = () => {
     const [openCreateWorkerModal, createWorkerModal] = useCreateWorker();
+    const [inactiveSecond, setInactiveSecond] = useState<number | undefined>();
     return <>
         {createWorkerModal}
         <Box p={5}>
@@ -199,12 +199,24 @@ export const Worker: React.FC = () => {
                     <Heading size='md'>Worker</Heading>
                 </CardHeader>
                 <CardBody>
-                    <IconButton
-                        aria-label='new worker'
-                        size='sm'
-                        icon={<AddIcon/>}
-                        onClick={openCreateWorkerModal}
-                    />
+                    <HStack>
+                        <IconButton
+                            aria-label='new worker'
+                            size='sm'
+                            icon={<AddIcon/>}
+                            onClick={openCreateWorkerModal}
+                        />
+                        <InputGroup size='sm' maxW='15rem'>
+                            <Input value={inactiveSecond} onChange={event => {
+                                if (event.target.value !== '') {
+                                    setInactiveSecond(Number(event.target.value));
+                                } else {
+                                    setInactiveSecond(undefined);
+                                }
+                            }} placeholder='Inactive To Dead' type='number'/>
+                            <InputRightAddon children='second'/>
+                        </InputGroup>
+                    </HStack>
                 </CardBody>
             </Card>
             <Box mt={3}>
