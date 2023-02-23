@@ -32,6 +32,7 @@ const useCreateCronTask = (): [() => void, ReactElement] => {
     const {isOpen, onOpen, onClose} = useDisclosure();
     const [currentWorkerSelections, setCurrentWorkerSelections] = useState<Worker[]>([]);
     const [functions, setFunctions] = useState<Func[]>([]);
+    const [timeUnit, setTimeUnit] = useState(TimeUnit.SECOND);
 
     const createCronTaskModal = <Modal isCentered isOpen={isOpen} onClose={onClose} size='3xl'>
         <ModalOverlay/>
@@ -48,14 +49,20 @@ const useCreateCronTask = (): [() => void, ReactElement] => {
                     <FormLabel>Every</FormLabel>
                     <Input mb={2} defaultValue={1} type='number'/>
                     <SliderSelector defaultValue='seconds' options={[
-                        {value: "micro-seconds", display: "MicroSeconds"},
+                        {value: "milliseconds", display: "Millisecond"},
                         {value: "seconds", display: "Seconds"},
                         {value: "minutes", display: "Minutes"},
                         {value: "hour", display: "Hour"},
                         {value: "day", display: "Day"},
-                        {value: "week", display: "Week"},
-                        {value: "month", display: "Month"},
-                    ]}/>
+                        {value: "week", display: "Week"}
+                    ]} onChange={value => setTimeUnit({
+                        'milliseconds': TimeUnit.MILLISECOND,
+                        'seconds': TimeUnit.SECOND,
+                        'minutes': TimeUnit.MINUTE,
+                        'hour': TimeUnit.HOUR,
+                        'day': TimeUnit.DAY,
+                        'week': TimeUnit.WEEK
+                    }[value]!)}/>
                 </FormControl>
                 <FunctionSelector onChange={setFunctions}/>
             </ModalBody>

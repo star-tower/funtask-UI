@@ -24,7 +24,10 @@ export function SliderSelector<T extends string>(props: {
     return <Flex>
         <Slider
             colorScheme='pink'
-            onChange={(value) => setCurrValue(options[value].value)}
+            onChange={(value) => {
+                setCurrValue(options[value].value);
+                onChange?.(options[value].value);
+            }}
             value={value2index.get(currValue)}
             max={options.length - 1}
             min={0}
@@ -35,7 +38,10 @@ export function SliderSelector<T extends string>(props: {
             </SliderTrack>
             <SliderThumb/>
         </Slider>
-        <Select value={currValue} placeholder={placeholder} onChange={value => setCurrValue(value.target.value)}>
+        <Select value={currValue} placeholder={placeholder} onChange={value => {
+            setCurrValue(value.target.value);
+            onChange?.(value.target.value);
+        }}>
             {options.map((option, index) => <option key={index} value={option.value}>{option.display}</option>)}
         </Select>
     </Flex>
