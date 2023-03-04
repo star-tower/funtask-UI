@@ -22,17 +22,31 @@ import {
     NumberIncrementStepper,
     NumberInput,
     NumberInputField,
-    NumberInputStepper, Skeleton, Stack,
+    NumberInputStepper,
+    Skeleton,
+    Stack,
     Table,
-    Tbody, Td, Th,
-    Thead, Tr,
-    useDisclosure, Text, useInterval, InputGroup, InputRightAddon, HStack
+    Tbody,
+    Td,
+    Th,
+    Thead,
+    Tr,
+    useDisclosure,
+    Text,
+    useInterval,
+    InputGroup,
+    InputRightAddon,
+    HStack,
+    Accordion,
+    AccordionButton,
+    AccordionPanel, AccordionIcon, AccordionItem
 } from "@chakra-ui/react";
 import {AddIcon} from "@chakra-ui/icons";
 import {TagSelector} from "../components/TagSelector";
 import {ApiService, Worker as WorkerModel} from "../openapi";
 import {useApiForm} from "../hooks/openapi";
 import {KVTag} from "../components/KVTag";
+import {WorkerTaskViewer} from "../components/WorkerTaskViewer";
 
 const useCreateWorker = (): [() => void, ReactElement] => {
     const {register, handleSubmit, formState} = useApiForm();
@@ -172,11 +186,37 @@ const WorkerTable = () => {
                         ))}
                     </Thead>
                     <Tbody>
-                        {table.getRowModel().rows.map((row) => <Tr key={row.id}>
-                                {row.getVisibleCells().map((cell) => <Td key={cell.id}>
-                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                </Td>)}
-                            </Tr>
+                        {table.getRowModel().rows.map((row) => <>
+                                <Tr key={row.id}>
+                                    {row.getVisibleCells().map((cell) => <Td key={cell.id}>
+                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    </Td>)}
+                                </Tr>
+                                <Tr key={row.id + '_detail'} p={0}>
+                                    <Td colSpan={7} p={0} borderBottomColor='#D3D3D3'>
+                                        <Accordion key={row.id + '_tasks'} allowMultiple border='white'>
+                                            <AccordionItem>
+                                                <h2>
+                                                    <AccordionButton>
+                                                        <Box as="span" flex='1' textAlign='left'>
+                                                            Charts
+                                                        </Box>
+                                                        <AccordionIcon/>
+                                                    </AccordionButton>
+                                                </h2>
+                                                <AccordionPanel pb={4}>
+                                                    <WorkerTaskViewer
+                                                        workerStartTime={new Date(row.getValue('start_time'))}
+                                                        workerStopTime={
+                                                            row.getValue('stop_time') === null ? undefined : new Date(row.getValue('stop_time'))
+                                                        }
+                                                    />
+                                                </AccordionPanel>
+                                            </AccordionItem>
+                                        </Accordion>
+                                    </Td>
+                                </Tr>
+                            </>
                         )}
                     </Tbody>
                 </Table> : <Stack>
