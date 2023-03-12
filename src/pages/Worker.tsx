@@ -206,6 +206,7 @@ const WorkerTable = () => {
                                                 </h2>
                                                 <AccordionPanel pb={4}>
                                                     <WorkerTaskViewer
+                                                        workerUUID={row.getValue('uuid')}
                                                         workerStartTime={new Date(row.getValue('start_time'))}
                                                         workerStopTime={
                                                             row.getValue('stop_time') === null ? undefined : new Date(row.getValue('stop_time'))

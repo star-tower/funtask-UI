@@ -1,15 +1,18 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {
     Badge,
     Box, Flex,
     FormControl,
-    FormLabel,
+    FormLabel, HStack,
     Input, Radio,
     RadioGroup, Spinner, Stack,
     useInterval
 } from "@chakra-ui/react";
 import {Allotment} from "allotment";
 import {useVirtualizer} from '@tanstack/react-virtual';
+import {useDebounce, useThrottle, useThrottleFn} from "react-use";
+import {useQuery} from "react-query";
+import {ApiService, TaskDescribe, TaskStatus} from "../openapi";
 
 type TimeScale = "second" | "minute" | "hour" | "day";
 
@@ -19,14 +22,15 @@ const calcRangeSeconds = (start: Date, end?: Date) => (end === undefined ? time2
 
 const timeAddSecondsDelta = (time: Date, secondDelta: number) => new Date(time.getTime() + secondDelta * 1000);
 
-const date2Str = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDay()} ${date.getHours()}:${date.getMinutes()}min`;
+const date2StandardStr = (date: Date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+const date2Str = (date: Date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}min`;
 const splitDateStr = (date: Date, scale: TimeScale) => {
     const [second, minute, hour, day, month, year] = [
         date.getSeconds(),
         date.getMinutes(),
         date.getHours(),
-        date.getDay(),
-        date.getMonth(),
+        date.getDate(),
+        date.getMonth() + 1,
         date.getFullYear()
     ];
     switch (scale) {
@@ -48,18 +52,56 @@ const scaleSecondMap = {
     "day": 24 * 60 * 60
 };
 
+const getCurrentRange = (
+    viewCurrStartTime: Date,
+    currScaleSecond: number,
+    overscanNum: number,
+    displayHeight: number
+): [Date, Date] => {
+    const renderStartTime = timeAddSecondsDelta(viewCurrStartTime, -currScaleSecond * overscanNum);
+    const renderEndTime = timeAddSecondsDelta(
+        viewCurrStartTime,
+        currScaleSecond * Math.ceil(displayHeight / currScaleSecond) + overscanNum * currScaleSecond
+    )
+    return [renderStartTime, renderEndTime];
+}
+
+const timeSub2second = (createTime: string, stopTime?: string | null) => {
+    const start = new Date(createTime);
+    const stop = (stopTime && new Date(stopTime)) || new Date();
+    return Math.ceil((stop.getTime() - start.getTime()) / 1000);
+}
+
 export const WorkerTaskViewer: React.FC<{
+    workerUUID: string,
     workerStartTime: Date,
     workerStopTime?: Date,
     defaultLatestSecond?: number
-}> = ({workerStartTime, workerStopTime, defaultLatestSecond}) => {
+}> = ({workerStartTime, workerStopTime, defaultLatestSecond, workerUUID}) => {
     const parentRef = React.useRef<HTMLDivElement | null>(null);
     const [viewTimeScale, setViewTimeScale] = useState<TimeScale>("hour");
     const cellHeight = 25;
+    const workerHeight = 400;
+    const overscan = 2;
     const [range, setRange] = useState<number>(
         () => Math.ceil(calcRangeSeconds(workerStartTime, workerStopTime) / scaleSecondMap[viewTimeScale])
     );
+
+    const rowVirtualizer = useVirtualizer({
+        count: range,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => cellHeight,
+        overscan
+    });
+    const viewCurrStartTime = timeAddSecondsDelta(
+        workerStartTime,
+        Math.ceil(rowVirtualizer.scrollOffset / cellHeight * scaleSecondMap[viewTimeScale])
+    );
     const [scroll2NextRender, setScroll2NextRender] = useState<Date | undefined>(undefined);
+    const renderTimeRange = useThrottle(
+        getCurrentRange(viewCurrStartTime, scaleSecondMap[viewTimeScale], overscan, workerHeight),
+        1000
+    );
 
     useInterval(() => {
         if (workerStopTime === undefined) {
@@ -68,17 +110,16 @@ export const WorkerTaskViewer: React.FC<{
             );
         }
     }, 1000);
-
-    const rowVirtualizer = useVirtualizer({
-        count: range,
-        getScrollElement: () => parentRef.current,
-        estimateSize: () => cellHeight,
-        overscan: 20
-    });
-    const viewCurrStartTime = timeAddSecondsDelta(
-        workerStartTime,
-        Math.ceil(rowVirtualizer.scrollOffset / cellHeight * scaleSecondMap[viewTimeScale])
-    );
+    const {
+        data,
+        isLoading,
+        isFetching
+    } = useQuery(['workerDesc', renderTimeRange], () => ApiService.getTasksApiTasksOnWorkerGet(
+        workerUUID,
+        date2StandardStr(renderTimeRange[0]),
+        20,
+        date2StandardStr(renderTimeRange[1])
+    ));
 
     useEffect(() => {
         // if scroll to next render is not undefined, then scroll to it, and set it to undefined again
@@ -92,7 +133,15 @@ export const WorkerTaskViewer: React.FC<{
         }
     }, [scroll2NextRender, viewTimeScale, workerStartTime, rowVirtualizer]);
 
-    return <Box h='calc(400px + 36px + 30px + 50px)'>
+    const scaleValue2task = useMemo<Record<number, TaskDescribe[]> | undefined>(() => data?.task_describes.reduce<Record<number, TaskDescribe[]>>(
+        (previousValue, currentValue) => {
+            const currTime = (new Date(currentValue.create_time)).getTime()
+            previousValue[currTime] = [...(previousValue[currTime] ?? []), currentValue];
+            return previousValue;
+        }, {}
+    ), [data]);
+
+    return <Box h={`calc(${workerHeight}px + 36px + 30px + 50px)`}>
         <Allotment defaultSizes={[1, 4]}>
             <Allotment.Pane minSize={400}>
                 <Box p={3}>
@@ -128,7 +177,7 @@ export const WorkerTaskViewer: React.FC<{
                     </FormControl>
                     <Flex alignItems='center' mb={3}>
                         <Badge colorScheme='purple'>{splitDateStr(viewCurrStartTime, viewTimeScale)[0]}</Badge>
-                        <Spinner ml={3} size='xs' />
+                        {(isLoading || isFetching) && <Spinner ml={3} size='xs'/>}
                     </Flex>
                     <Box
                         ref={parentRef}
@@ -142,35 +191,54 @@ export const WorkerTaskViewer: React.FC<{
                             w='calc(100% - 50px)'
                             position='relative'
                         >
-                            {rowVirtualizer.getVirtualItems().map((virtualItem) => <>
-                                <Box
-                                    key={virtualItem.key + '_time'}
-                                    position='absolute'
-                                    top={0}
-                                    height={`${virtualItem.size}px`}
-                                    transform={`translateY(${virtualItem.start}px)`}
-                                >
-                                    <Badge colorScheme='purple'>
-                                        {splitDateStr(timeAddSecondsDelta(
-                                            workerStartTime,
-                                            virtualItem.index * scaleSecondMap[viewTimeScale]
-                                        ), viewTimeScale)[1]}
-                                    </Badge>
-                                </Box>
-                                <div
-                                    key={virtualItem.key}
-                                    style={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 50,
-                                        width: '100%',
-                                        height: `${virtualItem.size}px`,
-                                        transform: `translateY(${virtualItem.start}px)`,
-                                    }}
-                                >
-                                    Row
-                            </div>
-                            </>)}
+                            {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                                const currTasks = scaleValue2task && scaleValue2task[
+                                    timeAddSecondsDelta(workerStartTime, virtualItem.index * scaleSecondMap[viewTimeScale]).getTime()
+                                    ];
+                                return <>
+                                    <Box
+                                        key={virtualItem.key + '_time'}
+                                        position='absolute'
+                                        top={0}
+                                        height={`${virtualItem.size}px`}
+                                        transform={`translateY(${virtualItem.start}px)`}
+                                    >
+                                        <Badge colorScheme='purple'>
+                                            {splitDateStr(timeAddSecondsDelta(
+                                                workerStartTime,
+                                                virtualItem.index * scaleSecondMap[viewTimeScale]
+                                            ), viewTimeScale)[1]}
+                                        </Badge>
+                                    </Box>
+                                    {currTasks && <HStack
+                                        key={virtualItem.key}
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 50,
+                                            width: '100%',
+                                            height: `${virtualItem.size}px`,
+                                            transform: `translateY(${virtualItem.start}px)`,
+                                        }}
+                                    >
+                                        {currTasks.map((value, index) => <Box
+                                            key={index}
+                                            w={3}
+                                            h={`${Math.max(timeSub2second(value.create_time, value.stop_time), 1 * cellHeight - 4)}px`}
+                                            backgroundColor={{
+                                                [TaskStatus.RUNNING]: "green",
+                                                [TaskStatus.DIED]: "red",
+                                                [TaskStatus.ERROR]: "red",
+                                                [TaskStatus.SKIP]: "",
+                                                [TaskStatus.QUEUED]: "",
+                                                [TaskStatus.SCHEDULED]: "",
+                                                [TaskStatus.UNSCHEDULED]: "",
+                                                [TaskStatus.SUCCESS]: "green"
+                                            }[value.status]}>
+                                        </Box>)}
+                                    </HStack>}
+                                </>
+                            })}
                         </Box>
                     </Box>
                 </Box>

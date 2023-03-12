@@ -9,5 +9,4 @@ export enum WorkerStatus {
     RUNNING = 'RUNNING',
     STOPPING = 'STOPPING',
     STOPPED = 'STOPPED',
-    DIED = 'DIED',
 }

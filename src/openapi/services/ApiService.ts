@@ -8,6 +8,7 @@ import type { NewCronTaskReq } from '../models/NewCronTaskReq';
 import type { NewFuncReq } from '../models/NewFuncReq';
 import type { NewTaskReq } from '../models/NewTaskReq';
 import type { ParameterSchema } from '../models/ParameterSchema';
+import type { TaskDescribesWithCursor } from '../models/TaskDescribesWithCursor';
 import type { Worker } from '../models/Worker';
 import type { WorkersWithCursor } from '../models/WorkersWithCursor';
 
@@ -145,6 +146,55 @@ export class ApiService {
             url: '/api/func_schema',
             query: {
                 'func_base64': funcBase64,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Get Tasks
+     * get tasks on specific worker.
+     * :param worker_inactive2dead_second: time interval of current to last heart beat to determine if a worker dead, dead
+     * worker's running function will not show
+     * :param worker_uuid: worker uuid
+     * :param begin_time: query tasks start time after this time
+     * :param end_time: query tasks start time before this time, begin time and end time compose a time range
+     * :param limit: how many tasks will get in this query, the rest of it can be got by cursor
+     * :param cursor: the cursor returned by last query
+     * :param include_cross_task: if this option is true, any task cross the time range will as result
+     * :return: list of task describe
+     * @param workerUuid
+     * @param beginTime
+     * @param workerInactive2DeadSecond
+     * @param endTime
+     * @param limit
+     * @param cursor
+     * @param includeCrossTask
+     * @returns TaskDescribesWithCursor Successful Response
+     * @throws ApiError
+     */
+    public static getTasksApiTasksOnWorkerGet(
+        workerUuid: string,
+        beginTime: string,
+        workerInactive2DeadSecond: number,
+        endTime?: string,
+        limit?: number,
+        cursor?: number,
+        includeCrossTask: boolean = true,
+    ): CancelablePromise<TaskDescribesWithCursor> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/tasks_on_worker',
+            query: {
+                'worker_uuid': workerUuid,
+                'begin_time': beginTime,
+                'worker_inactive2dead_second': workerInactive2DeadSecond,
+                'end_time': endTime,
+                'limit': limit,
+                'cursor': cursor,
+                'include_cross_task': includeCrossTask,
             },
             errors: {
                 422: `Validation Error`,

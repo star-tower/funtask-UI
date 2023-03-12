@@ -288,6 +288,106 @@
         }
       }
     },
+    "/api/tasks_on_worker": {
+      "get": {
+        "tags": [
+          "api"
+        ],
+        "summary": "Get Tasks",
+        "description": "get tasks on specific worker.\n:param worker_inactive2dead_second: time interval of current to last heart beat to determine if a worker dead, dead\nworker's running function will not show\n:param worker_uuid: worker uuid\n:param begin_time: query tasks start time after this time\n:param end_time: query tasks start time before this time, begin time and end time compose a time range\n:param limit: how many tasks will get in this query, the rest of it can be got by cursor\n:param cursor: the cursor returned by last query\n:param include_cross_task: if this option is true, any task cross the time range will as result\n:return: list of task describe",
+        "operationId": "get_tasks_api_tasks_on_worker_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Worker Uuid",
+              "type": "string"
+            },
+            "name": "worker_uuid",
+            "in": "query"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Begin Time",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "begin_time",
+            "in": "query"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Worker Inactive2Dead Second",
+              "type": "integer"
+            },
+            "name": "worker_inactive2dead_second",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "End Time",
+              "type": "string",
+              "format": "date-time"
+            },
+            "name": "end_time",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer"
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Cursor",
+              "type": "integer"
+            },
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Include Cross Task",
+              "type": "boolean",
+              "default": true
+            },
+            "name": "include_cross_task",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDescribesWithCursor"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cron_task": {
       "post": {
         "tags": [
@@ -595,6 +695,111 @@
           }
         }
       },
+      "TaskDescribe": {
+        "title": "TaskDescribe",
+        "required": [
+          "start_time",
+          "create_time",
+          "task_uuid",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "title": "Start Time",
+            "type": "string",
+            "format": "date-time"
+          },
+          "create_time": {
+            "title": "Create Time",
+            "type": "string",
+            "format": "date-time"
+          },
+          "task_uuid": {
+            "title": "Task Uuid",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "nullable": true
+          },
+          "stop_time": {
+            "title": "Stop Time",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "parent_task_uuid": {
+            "title": "Parent Task Uuid",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "parent_task_type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskType"
+              }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "TaskDescribesWithCursor": {
+        "title": "TaskDescribesWithCursor",
+        "required": [
+          "task_describes",
+          "cursor"
+        ],
+        "type": "object",
+        "properties": {
+          "task_describes": {
+            "title": "Task Describes",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskDescribe"
+            }
+          },
+          "cursor": {
+            "title": "Cursor",
+            "type": "integer"
+          }
+        }
+      },
+      "TaskStatus": {
+        "title": "TaskStatus",
+        "enum": [
+          "UNSCHEDULED",
+          "SCHEDULED",
+          "SKIP",
+          "QUEUED",
+          "RUNNING",
+          "SUCCESS",
+          "ERROR",
+          "DIED"
+        ],
+        "type": "string",
+        "description": "An enumeration."
+      },
+      "TaskType": {
+        "title": "TaskType",
+        "enum": [
+          "TASK",
+          "CRON_TASK"
+        ],
+        "type": "string",
+        "description": "An enumeration."
+      },
       "TimePoint": {
         "title": "TimePoint",
         "required": [
@@ -710,8 +915,7 @@
         "enum": [
           "RUNNING",
           "STOPPING",
-          "STOPPED",
-          "DIED"
+          "STOPPED"
         ],
         "type": "string",
         "description": "An enumeration."
